@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>กระดานรับข้อเสนอแนะ</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>tailwind.config={darkMode:'class'}</script>
+<style>
+*{font-family:'Sarabun',sans-serif;}
+body{transition:background .3s,color .3s;}
+.hidden{display:none!important;}
+.no-scrollbar::-webkit-scrollbar{display:none;}
+.no-scrollbar{scrollbar-width:none;}
+.glass{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+
+.sidebar-item{border-radius:0 24px 24px 0;transition:all .2s;}
+.sidebar-item:hover{background:rgba(30,41,59,.06);}
+.dark .sidebar-item:hover{background:rgba(241,245,249,.06);}
+.active-category{background:#f1f5f9;color:#1e293b;font-weight:700;}
+.dark .active-category{background:#1e293b;color:#f1f5f9;}
+
+.btn-primary{background:#1e293b;color:#fff;transition:background .2s;}
+.btn-primary:hover{background:#334155;}
+.dark .btn-primary{background:#f1f5f9;color:#0f172a;}
+.dark .btn-primary:hover{background:#e2e8f0;}
+
+.avatar-bg{background:#334155;}
+.dark .avatar-bg{background:#475569;}
+.admin-badge-style{background:#334155;color:#fff;}
+
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;transform:translateX(120%);transition:transform .3s cubic-bezier(.175,.885,.32,1.275);}
+.toast.show{transform:translateX(0);}
+
+.like-btn{color:#9ca3af;}
+.dark .like-btn{color:#4b5563;}
+.like-btn.liked{color:#1e293b;}
+.dark .like-btn.liked{color:#f1f5f9;}
+.like-btn.liked .material-symbols-outlined{font-variation-settings:'FILL' 1;}
+
+.card-enter{animation:slideUp .3s ease-out;}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.badge-pulse{animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:12px;}
+.dark .skeleton{background:linear-gradient(90deg,#1e293b 25%,#273344 50%,#1e293b 75%);background-size:200% 100%;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0;}
+.admin-status-select{appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;padding-right:24px!important;}
+.chart-container{position:relative;height:200px;}
+.attachment-preview{max-height:220px;object-fit:cover;border-radius:12px;width:100%;cursor:pointer;}
+.img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9990;align-items:center;justify-content:center;}
+.img-modal.open{display:flex;}
+.sort-btn.active{color:#1e293b;font-weight:700;}
+.dark .sort-btn.active{color:#f1f5f9;}
+select,input,textarea{color-scheme:light dark;}
+
+/* Pin */
+.pinned-card{border-left:4px solid #f59e0b!important;}
+.pin-badge{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.dark .pin-badge{background:#451a03;color:#fbbf24;border-color:#78350f;}
+
+/* Official reply */
+.official-reply{border-left:3px solid #475569;background:#f8fafc;}
+.dark .official-reply{border-left-color:#94a3b8;background:#1e2535;}
+
+/* Background pattern */
+.login-bg{
+  background-color:#ece9f1;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.25'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.dark .login-bg{
+  background-color:#0d0d14;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.12'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Mobile */
+.bottom-nav{display:none;}
+@media(max-width:768px){
+  .desktop-sidebar{display:none!important;}
+  .bottom-nav{display:flex;}
+}
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;}
+.drawer-overlay.open{display:block;}
+.mobile-drawer{position:fixed;left:0;top:0;bottom:0;width:260px;z-index:300;transform:translateX(-100%);transition:transform .3s ease;}
+.mobile-drawer.open{transform:translateX(0);}
+</style>
+</head>
+<body class="overflow-hidden bg-[#f0f4ff] dark:bg-[#0d0d14] text-gray-900 dark:text-gray-100">
+
+<!-- TOAST -->
+<div id="toast" class="toast bg-gray-900 dark:bg-slate-700 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-medium max-w-xs">
+  <span id="toastIcon" class="flex items-center"><span class="material-symbols-outlined text-base">check_circle</span></span>
+  <span id="toastMsg">บันทึกสำเร็จ</span>
+</div>
+
+<!-- IMAGE MODAL -->
+<div id="imgModal" class="img-modal" onclick="this.classList.remove('open')">
+  <img id="imgModalSrc" src="" class="max-w-[90vw] max-h-[90vh] rounded-2xl shadow-2xl object-contain"/>
+</div>
+
+<!-- MOBILE DRAWER -->
+<div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="mobileDrawer" class="mobile-drawer bg-white dark:bg-[#16162a] shadow-2xl flex flex-col py-4 pr-2">
+  <div class="flex items-center justify-between px-4 mb-6">
+    <span class="font-extrabold text-gray-900 dark:text-white tracking-tight">Voice<span class="text-slate-500">Board</span></span>
+    <button onclick="closeDrawer()" class="p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-[#2d2d2d] text-gray-400"><span class="material-symbols-outlined">close</span></button>
+  </div>
+  <div class="px-3 mb-2">
+    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-2">หมวดหมู่</p>
+    <div id="drawerCatMenu" class="space-y-0.5"></div>
+  </div>
+  <div class="px-3 mt-4">
+    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-2">สถานะ</p>
+    <div id="drawerStatusMenu" class="space-y-0.5"></div>
+  </div>
+  <div class="flex-1"></div>
+  <div id="drawerAdminBtn" class="hidden px-3 mb-2">
+    <button onclick="openAnalytics();closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold text-sm transition">
+      <span class="material-symbols-outlined">analytics</span> แดชบอร์ด
+    </button>
+  </div>
+  <div class="px-3 mb-20">
+    <button onclick="document.getElementById('settingsOverlay').classList.remove('hidden');closeDrawer()" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#2d2d2d] text-gray-500 font-bold text-sm transition">
+      <span class="material-symbols-outlined">settings</span> ตั้งค่า
+    </button>
+  </div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="flex items-center justify-center min-h-screen p-4 login-bg">
+  <div class="bg-white dark:bg-[#1a1a2e] p-10 rounded-3xl shadow-xl w-full max-w-md border border-gray-100 dark:border-gray-800 text-center">
+    <div class="w-14 h-14 rounded-2xl btn-primary flex items-center justify-center mx-auto mb-5 shadow">
+      <span class="material-symbols-outlined text-2xl">school</span>
+    </div>
+    <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-1 tracking-tight">ยินดีต้อนรับ</h1>
+    <p class="text-sm text-gray-400 mb-8">กระดานรับข้อเสนอแนะ มหาวิทยาลัย</p>
+    <div class="space-y-3">
+      <input id="studentId" type="text" maxlength="14" placeholder="รหัสนักศึกษา (u + 13 หลัก)"
+        class="w-full p-4 bg-gray-50 dark:bg-[#2d2d2d] border border-gray-200 dark:border-gray-700 rounded-2xl text-center focus:ring-2 focus:ring-slate-400 outline-none tracking-widest text-gray-800 dark:text-white font-bold uppercase transition">
+      <input id="loginPw" type="password" placeholder="รหัสผ่าน"
+        class="hidden w-full p-4 bg-gray-50 dark:bg-[#2d2d2d] border border-gray-200 dark:border-gray-700 rounded-2xl text-center focus:ring-2 focus:ring-slate-400 outline-none text-gray-800 dark:text-white transition">
+      <button id="btnLogin" class="btn-primary w-full py-4 rounded-2xl font-bold shadow transition text-base">ถัดไป</button>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER PAGE -->
+<div id="nicknamePage" class="hidden flex items-center justify-center min-h-screen p-4 login-bg">
+  <div class="bg-white dark:bg-[#1a1a2e] p-10 rounded-3xl shadow-xl w-full max-w-md border border-gray-100 dark:border-gray-800 text-center">
+    <div class="w-14 h-14 rounded-2xl btn-primary flex items-center justify-center mx-auto mb-5 shadow">
+      <span class="material-symbols-outlined text-2xl">waving_hand</span>
+    </div>
+    <h2 id="regTitle" class="text-xl mb-6 font-bold">สมัครใช้งานครั้งแรก</h2>
+    <div class="space-y-3">
+      <input id="nicknameInput" type="text" placeholder="ตั้งชื่อเล่น" class="w-full p-4 bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 rounded-2xl outline-none text-center focus:ring-2 focus:ring-slate-400 transition">
+      <input id="registerPw" type="password" placeholder="ตั้งรหัสผ่าน" class="w-full p-4 bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 rounded-2xl outline-none text-center focus:ring-2 focus:ring-slate-400 transition">
+      <button id="btnNick" class="btn-primary w-full py-4 rounded-2xl font-bold shadow transition">บันทึกและเข้าสู่ระบบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN PAGE -->
+<div id="mainPage" class="hidden h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-white/90 dark:bg-[#16162a]/90 glass px-4 md:px-6 py-3 flex justify-between items-center border-b border-gray-200/60 dark:border-gray-800/60 sticky top-0 z-50 shrink-0">
+    <div class="flex items-center gap-3">
+      <button onclick="openDrawer()" class="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#2d2d2d] transition">
+        <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">menu</span>
+      </button>
+      <div class="w-9 h-9 rounded-xl btn-primary items-center justify-center shadow hidden md:flex">
+        <span class="material-symbols-outlined text-base">school</span>
+      </div>
+      <span class="font-extrabold text-gray-900 dark:text-white text-lg tracking-tight">Voice<span class="text-slate-500 dark:text-slate-400">Board</span></span>
+    </div>
+    <div class="flex-1 max-w-md mx-4 hidden md:block">
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+        <input id="searchInput" type="text" placeholder="ค้นหาหัวข้อ, ปัญหา, ผู้ส่ง..."
+          class="w-full pl-9 pr-4 py-2.5 bg-gray-100 dark:bg-[#2d2d2d] rounded-2xl text-sm outline-none focus:ring-2 focus:ring-slate-400 border border-transparent dark:border-gray-700 transition">
+      </div>
+    </div>
+    <div class="flex items-center gap-2 md:gap-3">
+      <button id="btnMobileSearch" class="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#2d2d2d] text-gray-500 transition">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+      <div class="relative">
+        <button id="btnNotif" class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#2d2d2d] transition">
+          <span class="material-symbols-outlined text-gray-500">notifications</span>
+          <span id="notifBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center badge-pulse">0</span>
+        </button>
+      </div>
+      <div id="adminBadge" class="hidden px-2.5 py-1 rounded-lg text-[10px] font-black admin-badge-style shadow-sm">ADMIN</div>
+      <div class="flex items-center gap-2 bg-gray-100 dark:bg-[#2d2d2d] px-2 md:px-3 py-2 rounded-xl border dark:border-gray-700 cursor-pointer" onclick="document.getElementById('settingsOverlay').classList.remove('hidden')">
+        <div class="w-7 h-7 rounded-full overflow-hidden avatar-bg flex items-center justify-center text-white text-xs font-bold shrink-0" id="avatarCircle">?</div>
+        <span id="userNameDisplay" class="text-sm font-bold text-gray-700 dark:text-gray-300 hidden md:block"></span>
+      </div>
+      <button onclick="logout()" class="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-400 transition">
+        <span class="material-symbols-outlined text-sm">logout</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile search bar -->
+  <div id="mobileSearchBar" class="hidden md:hidden px-4 py-2 bg-white/90 dark:bg-[#16162a]/90 border-b dark:border-gray-800/60 glass">
+    <div class="relative">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+      <input id="searchInputMobile" type="text" placeholder="ค้นหา..."
+        class="w-full pl-9 pr-4 py-2.5 bg-gray-100 dark:bg-[#2d2d2d] rounded-2xl text-sm outline-none focus:ring-2 focus:ring-slate-400 border border-transparent dark:border-gray-700 transition">
+    </div>
+  </div>
+
+  <!-- Notification panel -->
+  <div id="notifPanel" class="hidden fixed top-16 right-2 md:right-4 w-80 bg-white dark:bg-[#1e1e2e] rounded-2xl shadow-2xl border dark:border-gray-800 z-[200] overflow-hidden">
+    <div class="p-4 border-b dark:border-gray-800 flex justify-between items-center">
+      <span class="font-bold text-sm">การแจ้งเตือน</span>
+      <button onclick="clearNotifs()" class="text-[10px] text-slate-500 font-bold hover:underline">ล้างทั้งหมด</button>
+    </div>
+    <div id="notifList" class="max-h-72 overflow-y-auto no-scrollbar">
+      <div class="p-6 text-center text-gray-400 text-sm italic">ไม่มีการแจ้งเตือน</div>
+    </div>
+  </div>
+
+  <div class="flex flex-1 overflow-hidden">
+    <!-- Desktop Sidebar -->
+    <aside class="desktop-sidebar w-60 bg-white dark:bg-[#16162a] py-4 pr-2 flex flex-col border-r border-gray-200/60 dark:border-gray-800/60 shrink-0">
+      <button id="btnOpenForm" class="btn-primary flex items-center gap-3 mx-3 mb-6 px-4 py-3.5 rounded-2xl shadow transition font-bold text-sm">
+        <span class="material-symbols-outlined text-base">edit_note</span> เขียนข้อเสนอแนะ
+      </button>
+      <div class="px-3 mb-2">
+        <p class="text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-2 px-2">หมวดหมู่</p>
+        <div id="categoryMenu" class="space-y-0.5"></div>
+      </div>
+      <div class="px-3 mt-4">
+        <p class="text-[10px] font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-2 px-2">สถานะ</p>
+        <div id="statusMenu" class="space-y-0.5"></div>
+      </div>
+      <div class="flex-1"></div>
+      <div id="adminAnalyticsBtn" class="hidden px-3 mb-2">
+        <button onclick="openAnalytics()" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold text-sm transition">
+          <span class="material-symbols-outlined">analytics</span> แดชบอร์ด
+        </button>
+      </div>
+      <div class="px-3">
+        <button id="btnSettings" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-gray-100 dark:hover:bg-[#2d2d2d] text-gray-500 dark:text-gray-400 font-bold text-sm transition">
+          <span class="material-symbols-outlined">settings</span> ตั้งค่า
+        </button>
+      </div>
+    </aside>
+
+    <!-- Feed -->
+    <main class="flex-1 overflow-y-auto no-scrollbar login-bg p-3 md:p-4 pb-24 md:pb-4">
+      <div class="max-w-4xl mx-auto mb-4 flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs text-gray-500 font-bold">เรียงโดย:</span>
+          <button id="sortNew" onclick="setSort('new')" class="sort-btn active px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#1e1e2e] border dark:border-gray-800 shadow-sm transition">ล่าสุด</button>
+          <button id="sortTop" onclick="setSort('top')" class="sort-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#1e1e2e] border dark:border-gray-800 shadow-sm transition text-gray-500">ยอดนิยม</button>
+          <button id="sortMine" onclick="setSort('mine')" class="sort-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#1e1e2e] border dark:border-gray-800 shadow-sm transition text-gray-500">ของฉัน</button>
+        </div>
+        <span id="resultCount" class="text-xs text-gray-400 font-medium"></span>
+      </div>
+      <div id="skeletons" class="max-w-4xl mx-auto space-y-4">
+        <div class="skeleton h-40 w-full"></div>
+        <div class="skeleton h-40 w-full"></div>
+        <div class="skeleton h-40 w-full"></div>
+      </div>
+      <div id="feedList" class="max-w-4xl mx-auto space-y-4 pb-4"></div>
+      <div id="pagination" class="max-w-4xl mx-auto flex justify-center gap-2 pb-6 hidden"></div>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#16162a]/95 glass border-t dark:border-gray-800 px-2 py-2 z-[150] justify-around items-center">
+    <button onclick="setSort('new')" class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-white transition">
+      <span class="material-symbols-outlined text-xl">home</span>
+      <span class="text-[9px] font-bold">หน้าหลัก</span>
+    </button>
+    <button onclick="openDrawer()" class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-white transition">
+      <span class="material-symbols-outlined text-xl">filter_list</span>
+      <span class="text-[9px] font-bold">กรอง</span>
+    </button>
+    <button onclick="document.getElementById('formOverlay').classList.remove('hidden')" class="-mt-5 w-14 h-14 btn-primary rounded-2xl shadow-xl flex flex-col items-center justify-center">
+      <span class="material-symbols-outlined text-2xl">add</span>
+    </button>
+    <button id="btnNotifMobile" class="relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-white transition">
+      <span class="material-symbols-outlined text-xl">notifications</span>
+      <span class="text-[9px] font-bold">แจ้งเตือน</span>
+      <span id="notifBadgeMobile" class="hidden absolute top-0 right-1 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center">0</span>
+    </button>
+    <button onclick="document.getElementById('settingsOverlay').classList.remove('hidden')" class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-white transition">
+      <span class="material-symbols-outlined text-xl">person</span>
+      <span class="text-[9px] font-bold">โปรไฟล์</span>
+    </button>
+  </nav>
+</div>
+
+<!-- POST / EDIT FORM OVERLAY -->
+<div id="formOverlay" class="hidden fixed inset-0 bg-black/60 glass flex items-center justify-center z-[100] p-4">
+  <div class="bg-white dark:bg-[#1e1e2e] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border dark:border-gray-800 max-h-[90vh] overflow-y-auto no-scrollbar">
+    <div class="p-5 flex justify-between items-center border-b dark:border-gray-800">
+      <div>
+        <h2 id="formTitle" class="font-extrabold text-lg flex items-center gap-2">
+          <span class="material-symbols-outlined text-slate-500">edit_note</span> แจ้งเรื่องใหม่
+        </h2>
+        <p class="text-xs text-gray-400 mt-0.5">กรอกข้อมูลให้ครบถ้วน</p>
+      </div>
+      <button onclick="closeFormOverlay()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#2d2d2d] flex items-center justify-center text-gray-400 hover:bg-red-100 hover:text-red-500 transition">✕</button>
+    </div>
+    <div class="p-6 space-y-4">
+      <input type="hidden" id="editingPostId" value="">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">หมวดหมู่</label>
+          <select id="category" class="w-full p-3 bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 rounded-xl outline-none text-sm focus:ring-2 focus:ring-slate-400 transition">
+            <option value="ห้องเรียน">ห้องเรียน</option>
+            <option value="ห้องน้ำ">ห้องน้ำ</option>
+            <option value="โรงอาหาร">โรงอาหาร</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">ความเร่งด่วน</label>
+          <select id="urgency" class="w-full p-3 bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 rounded-xl outline-none text-sm focus:ring-2 focus:ring-slate-400 transition">
+            <option value="ปกติ">ปกติ</option>
+            <option value="ปานกลาง">ปานกลาง</option>
+            <option value="เร่งด่วน">เร่งด่วน</option>
+          </select>
+        </div>
+      </div>
+      <!-- Title with counter -->
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">หัวข้อเรื่อง *</label>
+          <span id="titleCount" class="text-[10px] text-gray-400">0/80</span>
+        </div>
+        <input id="title" type="text" maxlength="80" placeholder="ระบุหัวข้อที่ชัดเจน..."
+          class="w-full p-3 bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 rounded-xl outline-none font-bold text-sm focus:ring-2 focus:ring-slate-400 transition">
+      </div>
+      <!-- Problem with counter -->
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">รายละเอียดปัญหา *</label>
+          <span id="problemCount" class="text-[10px] text-gray-400">0/500</span>
+        </div>
+        <textarea id="problem" maxlength="500" placeholder="อธิบายปัญหาที่พบ..." rows="3"
+          class="w-full p-3 bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 rounded-xl outline-none text-sm resize-none focus:ring-2 focus:ring-slate-400 transition"></textarea>
+      </div>
+      <!-- Solution with counter -->
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">แนวทางแก้ไข</label>
+          <span id="solutionCount" class="text-[10px] text-gray-400">0/300</span>
+        </div>
+        <textarea id="solution" maxlength="300" placeholder="เสนอแนวทางแก้ไข..." rows="2"
+          class="w-full p-3 bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 rounded-xl outline-none text-sm resize-none focus:ring-2 focus:ring-slate-400 transition"></textarea>
+      </div>
+      <!-- Image upload (hidden in edit mode) -->
+      <div id="imageUploadSection">
+        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">แนบรูปภาพ (ไม่บังคับ)</label>
+        <div id="uploadArea" class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-4 text-center cursor-pointer hover:border-slate-400 transition">
+          <span class="material-symbols-outlined text-gray-400 text-3xl">add_photo_alternate</span>
+          <p class="text-xs text-gray-400 mt-1">คลิกเพื่อเลือกรูป หรือลากมาวาง</p>
+          <input type="file" id="imageUpload" accept="image/*" class="hidden">
+        </div>
+        <div id="imagePreviewContainer" class="hidden mt-2 relative">
+          <img id="imagePreview" src="" class="w-full max-h-40 object-cover rounded-xl">
+          <button onclick="clearImage()" class="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">✕</button>
+        </div>
+      </div>
+      <!-- Anon toggle (hidden in edit mode) -->
+      <div id="anonSection" class="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#2d2d2d] rounded-xl">
+        <div>
+          <p class="text-sm font-bold">โพสต์แบบไม่ระบุตัวตน</p>
+          <p class="text-[10px] text-gray-400">ชื่อของคุณจะแสดงเป็น "นักศึกษา"</p>
+        </div>
+        <button id="anonToggle" onclick="toggleAnon()" class="w-12 h-6 rounded-full bg-gray-300 relative transition-all">
+          <div id="anonDot" class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-all shadow-sm"></div>
+        </button>
+      </div>
+      <div id="formError" class="hidden bg-red-50 dark:bg-red-900/20 text-red-500 text-xs p-3 rounded-xl font-bold"></div>
+      <button id="btnSubmit" class="btn-primary w-full py-4 rounded-2xl font-extrabold shadow transition text-base flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-base">send</span> ส่งข้อเสนอแนะ
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS OVERLAY -->
+<div id="settingsOverlay" class="hidden fixed inset-0 bg-black/60 glass flex items-center justify-center z-[110] p-4">
+  <div class="bg-white dark:bg-[#1e1e2e] w-full max-w-sm rounded-3xl shadow-2xl border dark:border-gray-800 overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar">
+    <div class="p-5 flex justify-between items-center border-b dark:border-gray-800">
+      <h2 class="font-extrabold text-lg flex items-center gap-2"><span class="material-symbols-outlined text-slate-500">settings</span> ตั้งค่า</h2>
+      <button onclick="closeOverlay('settingsOverlay')" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#2d2d2d] flex items-center justify-center text-gray-400 hover:bg-red-100 hover:text-red-500 transition">✕</button>
+    </div>
+    <div class="p-6 space-y-6 text-sm">
+      <!-- Profile picture -->
+      <div class="flex flex-col items-center gap-3 pb-4 border-b dark:border-gray-700">
+        <div class="relative">
+          <div class="w-20 h-20 rounded-full overflow-hidden avatar-bg flex items-center justify-center text-white text-2xl font-bold shadow-md" id="settingsAvatar">?</div>
+          <button onclick="document.getElementById('avatarUpload').click()" class="absolute bottom-0 right-0 w-7 h-7 btn-primary rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-800 transition">
+            <span class="material-symbols-outlined text-sm">photo_camera</span>
+          </button>
+          <input type="file" id="avatarUpload" accept="image/*" class="hidden">
+        </div>
+        <div class="text-center">
+          <p class="font-bold" id="settingsName"></p>
+          <p class="text-[11px] text-gray-400 mt-0.5">คลิกที่กล้องเพื่อเปลี่ยนรูป</p>
+        </div>
+        <button id="btnRemoveAvatar" onclick="removeAvatar()" class="hidden text-[11px] text-red-400 hover:underline font-bold flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">delete</span> ลบรูปโปรไฟล์
+        </button>
+      </div>
+      <!-- Theme -->
+      <div class="flex items-center justify-between">
+        <div><p class="font-bold">โหมดกลางคืน</p><p class="text-xs text-gray-400">เปลี่ยนธีมของแอป</p></div>
+        <button id="themeToggle" class="w-12 h-6 rounded-full bg-gray-300 dark:bg-slate-600 relative transition-all">
+          <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 dark:left-6 transition-all shadow-sm"></div>
+        </button>
+      </div>
+      <!-- Notifications -->
+      <div class="flex items-center justify-between">
+        <div><p class="font-bold">การแจ้งเตือน</p><p class="text-xs text-gray-400">คอมเมนต์ใหม่และสถานะเปลี่ยน</p></div>
+        <button id="notifToggle" class="w-12 h-6 rounded-full bg-slate-600 relative transition-all">
+          <div class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-6 transition-all shadow-sm"></div>
+        </button>
+      </div>
+      <!-- Nickname -->
+      <div class="pt-4 border-t dark:border-gray-700">
+        <label class="text-[10px] font-black text-gray-400 block mb-2 uppercase tracking-widest">เปลี่ยนชื่อเล่น</label>
+        <div class="flex gap-2">
+          <input id="editNickname" type="text" class="flex-1 p-2.5 bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 rounded-xl outline-none text-sm focus:ring-2 focus:ring-slate-400">
+          <button onclick="updateNickname()" class="btn-primary px-4 py-2.5 rounded-xl font-bold text-sm shadow transition">บันทึก</button>
+        </div>
+      </div>
+      <!-- Password -->
+      <div>
+        <label class="text-[10px] font-black text-gray-400 block mb-2 uppercase tracking-widest">รหัสผ่านใหม่</label>
+        <div class="flex gap-2">
+          <input id="editPw" type="password" class="flex-1 p-2.5 bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 rounded-xl outline-none text-sm focus:ring-2 focus:ring-slate-400">
+          <button onclick="updatePassword()" class="btn-primary px-4 py-2.5 rounded-xl font-bold text-sm shadow transition">บันทึก</button>
+        </div>
+      </div>
+      <!-- My stats -->
+      <div class="pt-4 border-t dark:border-gray-700">
+        <label class="text-[10px] font-black text-gray-400 block mb-3 uppercase tracking-widest">สถิติของฉัน</label>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl text-center"><div id="myPostCount" class="text-2xl font-black text-slate-700 dark:text-slate-300">0</div><div class="text-[10px] text-gray-400">โพสต์</div></div>
+          <div class="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl text-center"><div id="myLikeCount" class="text-2xl font-black text-slate-700 dark:text-slate-300">0</div><div class="text-[10px] text-gray-400">ไลค์รับ</div></div>
+          <div class="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl text-center"><div id="myCommentCount" class="text-2xl font-black text-slate-700 dark:text-slate-300">0</div><div class="text-[10px] text-gray-400">คอมเมนต์</div></div>
+        </div>
+      </div>
+      <!-- Delete account -->
+      <div class="pt-4 border-t dark:border-gray-700 text-center">
+        <button onclick="deleteAccount()" class="text-red-500 text-xs font-bold hover:underline flex items-center gap-1 mx-auto">
+          <span class="material-symbols-outlined text-sm">delete_forever</span> ลบบัญชีผู้ใช้
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYTICS OVERLAY -->
+<div id="analyticsOverlay" class="hidden fixed inset-0 bg-black/60 glass flex items-center justify-center z-[110] p-4">
+  <div class="bg-white dark:bg-[#1e1e2e] w-full max-w-2xl rounded-3xl shadow-2xl border dark:border-gray-800 overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar">
+    <div class="p-5 flex justify-between items-center border-b dark:border-gray-800">
+      <h2 class="font-extrabold text-lg flex items-center gap-2"><span class="material-symbols-outlined text-slate-500">analytics</span> แดชบอร์ดผู้ดูแลระบบ</h2>
+      <button onclick="closeOverlay('analyticsOverlay')" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#2d2d2d] flex items-center justify-center text-gray-400 hover:bg-red-100 hover:text-red-500 transition">✕</button>
+    </div>
+    <div class="p-6 space-y-6">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl"><div id="statTotal" class="text-3xl font-black text-slate-700 dark:text-slate-300">0</div><div class="text-xs text-gray-500 mt-1">ทั้งหมด</div></div>
+        <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl"><div id="statPending" class="text-3xl font-black text-amber-500">0</div><div class="text-xs text-gray-500 mt-1">รอดำเนินการ</div></div>
+        <div class="bg-sky-50 dark:bg-sky-900/20 p-4 rounded-2xl"><div id="statInProgress" class="text-3xl font-black text-sky-500">0</div><div class="text-xs text-gray-500 mt-1">กำลังดำเนินการ</div></div>
+        <div class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-2xl"><div id="statDone" class="text-3xl font-black text-emerald-500">0</div><div class="text-xs text-gray-500 mt-1">แก้ไขแล้ว</div></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-gray-50 dark:bg-[#2d2d2d] p-4 rounded-2xl"><h3 class="text-sm font-bold mb-3">หมวดหมู่</h3><div class="chart-container"><canvas id="catChart"></canvas></div></div>
+        <div class="bg-gray-50 dark:bg-[#2d2d2d] p-4 rounded-2xl"><h3 class="text-sm font-bold mb-3">สถานะ</h3><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold mb-3 flex items-center gap-1.5"><span class="material-symbols-outlined text-base text-slate-500">trending_up</span> โพสต์ยอดนิยม</h3>
+        <div id="topPosts" class="space-y-2"></div>
+      </div>
+      <div class="pt-4 border-t dark:border-gray-700">
+        <button onclick="exportCSV()" class="w-full flex items-center justify-center gap-2 p-3 bg-gray-100 dark:bg-[#2d2d2d] rounded-2xl hover:bg-gray-200 font-bold text-sm transition">
+          <span class="material-symbols-outlined text-sm">download</span> ส่งออกข้อมูล CSV
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyBUYmTxuPDRYcCgvFOAMY2egwq0mSgBZ-Q",
+  authDomain:"voice-of-the-customer-39384.firebaseapp.com",
+  databaseURL:"https://voice-of-the-customer-39384-default-rtdb.firebaseio.com",
+  projectId:"voice-of-the-customer-39384",
+  storageBucket:"voice-of-the-customer-39384.firebasestorage.app",
+  messagingSenderId:"720582164553",
+  appId:"1:720582164553:web:617c1cc01435997cfebf98"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ── STATE ──────────────────────────────────────────────────
+let currentSID  = localStorage.getItem('uni_sid') || "";
+let currentUser = "", currentRole = "user";
+let currentFilter = "ทั้งหมด", currentStatusFilter = "ทั้งหมด";
+let currentSort = "new", searchQuery = "";
+let allFeedbacks = [], isAnon = false, imageBase64 = null;
+let notifEnabled = localStorage.getItem('notifEnabled') !== 'false';
+let knownCommentCounts = {}, knownStatuses = {};
+let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+let catChartInst = null, statusChartInst = null;
+let userPhotoCache = {};
+const ITEMS_PER_PAGE = 10;
+let currentPage = 1;
+
+const catIcons = {"ห้องเรียน":"school","ห้องน้ำ":"wc","โรงอาหาร":"restaurant","อื่นๆ":"lightbulb","ทั้งหมด":"folder"};
+const statusConfig = {
+  "รอดำเนินการ":  {cls:"bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-900/50", dot:"#f59e0b"},
+  "กำลังดำเนินการ":{cls:"bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-900/50",      dot:"#0ea5e9"},
+  "แก้ไขแล้ว":    {cls:"bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-900/50", dot:"#10b981"}
+};
+const urgencyConfig = {
+  "ปกติ":"bg-green-100 text-green-700 border-green-200",
+  "ปานกลาง":"bg-yellow-100 text-yellow-700 border-yellow-200",
+  "เร่งด่วน":"bg-red-100 text-red-700 border-red-200"
+};
+
+// ── THEME ───────────────────────────────────────────────────
+if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+document.getElementById('themeToggle').onclick = () => {
+  const d = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', d ? 'dark' : 'light');
+};
+
+// ── UTILS ───────────────────────────────────────────────────
+window.showToast = (msg, icon = 'check_circle') => {
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').innerHTML = `<span class="material-symbols-outlined text-base">${icon}</span>`;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+};
+const timeAgo = (ts) => {
+  const d = (Date.now() - ts) / 1000;
+  if (d < 60)    return 'เมื่อสักครู่';
+  if (d < 3600)  return `${Math.floor(d/60)} นาทีที่แล้ว`;
+  if (d < 86400) return `${Math.floor(d/3600)} ชั่วโมงที่แล้ว`;
+  return `${Math.floor(d/86400)} วันที่แล้ว`;
+};
+const highlight = (text) => {
+  if (!searchQuery) return text;
+  const re = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return text.replace(re, '<mark class="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">$1</mark>');
+};
+const showPage = (id) => {
+  ['loginPage','nicknamePage','mainPage'].forEach(p => document.getElementById(p).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+};
+window.closeOverlay = (id) => document.getElementById(id).classList.add('hidden');
+
+// ── MOBILE DRAWER ───────────────────────────────────────────
+window.openDrawer = () => {
+  document.getElementById('mobileDrawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+};
+window.closeDrawer = () => {
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+};
+document.getElementById('btnMobileSearch').onclick = () => {
+  const bar = document.getElementById('mobileSearchBar');
+  bar.classList.toggle('hidden');
+  if (!bar.classList.contains('hidden')) document.getElementById('searchInputMobile').focus();
+};
+
+// ── SEARCH ──────────────────────────────────────────────────
+let searchTimer;
+const doSearch = (q) => { searchQuery = q; currentPage = 1; renderFeed(); };
+document.getElementById('searchInput').oninput = (e) => { clearTimeout(searchTimer); searchTimer = setTimeout(() => doSearch(e.target.value.trim()), 300); };
+document.getElementById('searchInputMobile').oninput = (e) => { clearTimeout(searchTimer); searchTimer = setTimeout(() => doSearch(e.target.value.trim()), 300); };
+
+// ── NOTIFICATIONS ────────────────────────────────────────────
+window.clearNotifs = () => {
+  notifications = []; localStorage.setItem('notifications', '[]');
+  renderNotifs(); updateNotifBadge();
+};
+const addNotif = (msg) => {
+  if (!notifEnabled) return;
+  notifications.unshift({ msg, time: Date.now(), read: false });
+  if (notifications.length > 30) notifications.pop();
+  localStorage.setItem('notifications', JSON.stringify(notifications));
+  renderNotifs(); updateNotifBadge();
+};
+const updateNotifBadge = () => {
+  const unread = notifications.filter(n => !n.read).length;
+  ['notifBadge','notifBadgeMobile'].forEach(id => {
+    const b = document.getElementById(id); if (!b) return;
+    if (unread > 0) { b.classList.remove('hidden'); b.textContent = unread > 9 ? '9+' : unread; }
+    else b.classList.add('hidden');
+  });
+};
+const renderNotifs = () => {
+  const list = document.getElementById('notifList');
+  if (!notifications.length) { list.innerHTML = '<div class="p-6 text-center text-gray-400 text-sm italic">ไม่มีการแจ้งเตือน</div>'; return; }
+  list.innerHTML = notifications.slice(0,15).map(n => `
+    <div class="p-3 border-b dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-[#2d2d2d] transition ${n.read?'':'bg-slate-50 dark:bg-slate-800/30'}">
+      <p class="text-xs font-medium text-gray-800 dark:text-gray-200">${n.msg}</p>
+      <p class="text-[10px] text-gray-400 mt-0.5">${timeAgo(n.time)}</p>
+    </div>`).join('');
+  notifications.forEach(n => n.read = true);
+  localStorage.setItem('notifications', JSON.stringify(notifications));
+};
+
+const setupNotifPanel = (btnId) => {
+  document.getElementById(btnId).onclick = (e) => {
+    e.stopPropagation();
+    document.getElementById('notifPanel').classList.toggle('hidden');
+    renderNotifs(); updateNotifBadge();
+  };
+};
+setupNotifPanel('btnNotif');
+setupNotifPanel('btnNotifMobile');
+document.addEventListener('click', () => document.getElementById('notifPanel').classList.add('hidden'));
+
+document.getElementById('notifToggle').onclick = () => {
+  notifEnabled = !notifEnabled;
+  localStorage.setItem('notifEnabled', notifEnabled);
+  const btn = document.getElementById('notifToggle'), dot = btn.querySelector('div');
+  btn.className = `w-12 h-6 rounded-full relative transition-all ${notifEnabled ? 'bg-slate-600' : 'bg-gray-300'}`;
+  dot.style.left = notifEnabled ? '26px' : '2px';
+};
+
+// ── AVATAR ───────────────────────────────────────────────────
+const getUserPhoto = async (sid) => {
+  if (userPhotoCache[sid] !== undefined) return userPhotoCache[sid];
+  const s = await get(ref(db, `users/${sid}`));
+  const photo = s.exists() ? (s.val().photoURL || null) : null;
+  userPhotoCache[sid] = photo; return photo;
+};
+const renderAllAvatars = (photoURL) => {
+  ['avatarCircle','settingsAvatar'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    el.innerHTML = photoURL
+      ? `<img src="${photoURL}" class="w-full h-full object-cover">`
+      : currentUser.charAt(0).toUpperCase();
+  });
+  const rb = document.getElementById('btnRemoveAvatar');
+  if (rb) rb.classList.toggle('hidden', !photoURL);
+};
+document.getElementById('avatarUpload').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  if (file.size > 300000) { showToast('ไฟล์ใหญ่เกิน 300KB', 'warning'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const b64 = ev.target.result;
+    update(ref(db, `users/${currentSID}`), { photoURL: b64 }).then(() => {
+      userPhotoCache[currentSID] = b64; renderAllAvatars(b64);
+      showToast('อัปเดตรูปโปรไฟล์แล้ว');
+    });
+  };
+  reader.readAsDataURL(file);
+};
+window.removeAvatar = () => {
+  if (confirm('ลบรูปโปรไฟล์?')) {
+    update(ref(db, `users/${currentSID}`), { photoURL: null }).then(() => {
+      userPhotoCache[currentSID] = null; renderAllAvatars(null);
+      showToast('ลบรูปโปรไฟล์แล้ว', 'delete');
+    });
+  }
+};
+
+// ── CHARACTER COUNTERS ────────────────────────────────────────
+const setupCounter = (inputId, countId, max) => {
+  const el = document.getElementById(inputId);
+  const counter = document.getElementById(countId);
+  const upd = () => {
+    const len = el.value.length;
+    counter.textContent = `${len}/${max}`;
+    counter.className = `text-[10px] ${len > max * 0.9 ? 'text-red-400 font-bold' : 'text-gray-400'}`;
+  };
+  el.addEventListener('input', upd);
+};
+setupCounter('title',    'titleCount',    80);
+setupCounter('problem',  'problemCount',  500);
+setupCounter('solution', 'solutionCount', 300);
+
+// ── ANON TOGGLE ───────────────────────────────────────────────
+window.toggleAnon = () => {
+  isAnon = !isAnon;
+  const btn = document.getElementById('anonToggle'), dot = document.getElementById('anonDot');
+  btn.className = `w-12 h-6 rounded-full relative transition-all ${isAnon ? 'bg-slate-600' : 'bg-gray-300'}`;
+  dot.style.left = isAnon ? '26px' : '2px';
+};
+
+// ── IMAGE UPLOAD ──────────────────────────────────────────────
+const uploadArea = document.getElementById('uploadArea');
+uploadArea.onclick = () => document.getElementById('imageUpload').click();
+uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add('border-slate-400'); };
+uploadArea.ondragleave = () => uploadArea.classList.remove('border-slate-400');
+uploadArea.ondrop = (e) => { e.preventDefault(); uploadArea.classList.remove('border-slate-400'); handleImageFile(e.dataTransfer.files[0]); };
+document.getElementById('imageUpload').onchange = (e) => handleImageFile(e.target.files[0]);
+const handleImageFile = (file) => {
+  if (!file || !file.type.startsWith('image/')) return;
+  if (file.size > 500000) { showToast('ไฟล์ใหญ่เกิน 500KB', 'warning'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    imageBase64 = e.target.result;
+    document.getElementById('imagePreview').src = imageBase64;
+    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+};
+window.clearImage = () => {
+  imageBase64 = null;
+  document.getElementById('imagePreviewContainer').classList.add('hidden');
+  document.getElementById('imageUpload').value = '';
+};
+
+// ── SORT ──────────────────────────────────────────────────────
+window.setSort = (s) => {
+  currentSort = s;
+  document.querySelectorAll('.sort-btn').forEach(b => { b.classList.remove('active'); b.classList.add('text-gray-500'); });
+  const el = document.getElementById('sort' + s.charAt(0).toUpperCase() + s.slice(1));
+  if (el) { el.classList.add('active'); el.classList.remove('text-gray-500'); }
+  renderFeed();
+};
+
+// ── AUTH ──────────────────────────────────────────────────────
+document.getElementById('btnLogin').onclick = async () => {
+  const sid = document.getElementById('studentId').value.trim().toLowerCase();
+  const pwInput = document.getElementById('loginPw');
+  if (!/^u\d{13}$/.test(sid)) { showToast('รหัสต้องเป็น u + 13 หลัก', 'warning'); return; }
+  const snapshot = await get(ref(db, `users/${sid}`));
+  if (snapshot.exists()) {
+    const u = snapshot.val();
+    if (!u.password) { currentSID = sid; document.getElementById('regTitle').innerText = "อัปเดตความปลอดภัยบัญชี"; document.getElementById('nicknameInput').value = u.nickname; showPage('nicknamePage'); return; }
+    if (pwInput.classList.contains('hidden')) { pwInput.classList.remove('hidden'); document.getElementById('btnLogin').innerText = 'เข้าสู่ระบบ'; }
+    else {
+      if (pwInput.value === u.password) { currentSID = sid; currentUser = u.nickname; currentRole = u.role || "user"; localStorage.setItem('uni_sid', sid); initMain(); }
+      else showToast('รหัสผ่านไม่ถูกต้อง', 'lock');
+    }
+  } else { currentSID = sid; showPage('nicknamePage'); }
+};
+document.getElementById('btnNick').onclick = () => {
+  const nick = document.getElementById('nicknameInput').value.trim();
+  const pw   = document.getElementById('registerPw').value.trim();
+  if (!nick || !pw) { showToast('กรุณากรอกข้อมูลให้ครบ', 'warning'); return; }
+  update(ref(db, `users/${currentSID}`), { nickname: nick, password: pw, role: "user" }).then(() => {
+    currentUser = nick; currentRole = "user"; localStorage.setItem('uni_sid', currentSID); initMain();
+  });
+};
+
+// ── MAIN ──────────────────────────────────────────────────────
+function initMain() {
+  showPage('mainPage');
+  document.getElementById('userNameDisplay').textContent = currentUser;
+  document.getElementById('editNickname').value = currentUser;
+  document.getElementById('settingsName').textContent = currentUser;
+  get(ref(db, `users/${currentSID}`)).then(s => {
+    renderAllAvatars(s.exists() ? s.val().photoURL || null : null);
+  });
+  if (currentRole === 'admin') {
+    document.getElementById('adminBadge').classList.remove('hidden');
+    document.getElementById('adminAnalyticsBtn').classList.remove('hidden');
+    document.getElementById('drawerAdminBtn').classList.remove('hidden');
+  }
+  updateNotifBadge(); renderMenu(); listenToData();
+}
+
+function listenToData() {
+  onValue(ref(db, 'feedbacks'), (snapshot) => {
+    document.getElementById('skeletons').classList.add('hidden');
+    const data = snapshot.val();
+    allFeedbacks = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+
+    // Detect new comments AND status changes on my posts
+    allFeedbacks.forEach(item => {
+      if (item.sid !== currentSID) return;
+      const count = Object.keys(item.comments || {}).length;
+      if (knownCommentCounts[item.id] !== undefined && count > knownCommentCounts[item.id])
+        addNotif(`มีความคิดเห็นใหม่ในโพสต์ "${item.title}"`);
+      knownCommentCounts[item.id] = count;
+
+      const st = item.status || 'รอดำเนินการ';
+      if (knownStatuses[item.id] !== undefined && knownStatuses[item.id] !== st)
+        addNotif(`สถานะโพสต์ "${item.title}" เปลี่ยนเป็น "${st}"`);
+      knownStatuses[item.id] = st;
+    });
+
+    currentPage = 1; renderFeed();
+    if (currentRole === 'admin') updateAnalytics();
+    updateMyStats();
+  });
+}
+
+function getFilteredSorted() {
+  let items = [...allFeedbacks];
+  if (currentFilter !== 'ทั้งหมด') items = items.filter(i => i.category === currentFilter);
+  if (currentStatusFilter !== 'ทั้งหมด') items = items.filter(i => (i.status || 'รอดำเนินการ') === currentStatusFilter);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    items = items.filter(i =>
+      (i.title||'').toLowerCase().includes(q) ||
+      (i.problem||'').toLowerCase().includes(q) ||
+      (i.user||'').toLowerCase().includes(q));
+  }
+  const pinned = items.filter(i => i.pinned);
+  const rest   = items.filter(i => !i.pinned);
+  if (currentSort === 'new')  rest.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+  else if (currentSort === 'top')  rest.sort((a,b) => Object.keys(b.likes||{}).length - Object.keys(a.likes||{}).length);
+  else if (currentSort === 'mine') return items.filter(i => i.sid === currentSID).sort((a,b) => (b.timestamp||0)-(a.timestamp||0));
+  return [...pinned, ...rest];
+}
+
+function renderFeed() {
+  const list = document.getElementById('feedList');
+  const pagination = document.getElementById('pagination');
+  list.innerHTML = '';
+  const items = getFilteredSorted();
+  document.getElementById('resultCount').textContent = `${items.length} รายการ`;
+  if (!items.length) {
+    list.innerHTML = `<div class="p-20 text-center text-gray-400"><span class="material-symbols-outlined text-5xl mb-4 block">search_off</span><p class="italic font-medium">ไม่พบข้อมูลที่ตรงกัน</p></div>`;
+    pagination.classList.add('hidden'); return;
+  }
+  const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+  const paged = items.slice((currentPage-1)*ITEMS_PER_PAGE, currentPage*ITEMS_PER_PAGE);
+
+  paged.forEach((item, idx) => {
+    const likes    = item.likes    || {};
+    const comments = item.comments || {};
+    const status   = item.status   || 'รอดำเนินการ';
+    const urgency  = item.urgency  || 'ปกติ';
+    const hasLiked = !!likes[currentSID];
+    const isPinned = !!item.pinned;
+    const sc = statusConfig[status] || statusConfig['รอดำเนินการ'];
+    const uc = urgencyConfig[urgency] || '';
+
+    const card = document.createElement('div');
+    card.className = `card-enter bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-sm border dark:border-gray-800/60 overflow-hidden hover:shadow-md transition-shadow ${isPinned ? 'pinned-card' : ''}`;
+    card.style.animationDelay = `${idx * 0.05}s`;
+
+    const canEdit = item.sid === currentSID || currentRole === 'admin';
+    card.innerHTML = `
+      <div class="px-5 pt-4 pb-3 flex justify-between items-start gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          ${isPinned ? `<span class="pin-badge px-2 py-0.5 rounded-full text-[10px] font-black flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:11px">push_pin</span>ปักหมุด</span>` : ''}
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black border ${sc.cls}">
+            <span class="status-dot" style="background:${sc.dot}"></span>${status}
+          </span>
+          <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2.5 py-1 rounded-full text-[10px] font-black border border-slate-200 dark:border-slate-700 inline-flex items-center gap-1">
+            <span class="material-symbols-outlined" style="font-size:12px">${catIcons[item.category]||'folder'}</span> ${item.category}
+          </span>
+          ${urgency !== 'ปกติ' ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-black border ${uc}">${urgency}</span>` : ''}
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          ${currentRole==='admin' ? `
+            <button class="btn-pin w-7 h-7 rounded-full flex items-center justify-center transition ${isPinned?'text-amber-500 bg-amber-50 dark:bg-amber-900/20':'text-gray-300 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'}">
+              <span class="material-symbols-outlined text-sm">push_pin</span>
+            </button>
+            <select class="admin-status-select text-[11px] font-bold rounded-lg px-3 py-1.5 outline-none border cursor-pointer transition
+              ${status==='รอดำเนินการ'?'bg-amber-50 text-amber-700 border-amber-200':status==='กำลังดำเนินการ'?'bg-sky-50 text-sky-700 border-sky-200':'bg-emerald-50 text-emerald-700 border-emerald-200'}">
+              <option value="รอดำเนินการ"   ${status==='รอดำเนินการ'?'selected':''}>● รอดำเนินการ</option>
+              <option value="กำลังดำเนินการ" ${status==='กำลังดำเนินการ'?'selected':''}>● กำลังดำเนินการ</option>
+              <option value="แก้ไขแล้ว"     ${status==='แก้ไขแล้ว'?'selected':''}>● แก้ไขแล้ว</option>
+            </select>` : ''}
+          ${canEdit ? `
+            <button class="btn-edit w-7 h-7 rounded-full flex items-center justify-center text-gray-300 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              <span class="material-symbols-outlined text-sm">edit</span>
+            </button>
+            <button class="btn-del w-7 h-7 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+              <span class="material-symbols-outlined text-sm">delete</span>
+            </button>` : ''}
+        </div>
+      </div>
+      <div class="px-5 pb-4">
+        <h3 class="font-extrabold text-lg text-gray-900 dark:text-gray-50 mb-0.5 leading-tight">${highlight(item.title)}</h3>
+        <p class="text-[11px] text-gray-400 font-medium mb-3 flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded-full overflow-hidden avatar-bg inline-flex items-center justify-center text-white text-[8px] font-black shrink-0 post-avatar" data-sid="${item.sid}">${(item.user||'?').charAt(0).toUpperCase()}</span>
+          ${item.user} · ${timeAgo(item.timestamp)}${item.editedAt ? ' · <span class="italic opacity-70">แก้ไขแล้ว</span>' : ''}
+        </p>
+        <div class="bg-gray-50 dark:bg-[#252535] rounded-xl border-l-4 border-slate-400 p-3.5 space-y-2 mb-3">
+          <p class="text-sm text-gray-600 dark:text-gray-300"><span class="font-black text-gray-400 text-[10px] uppercase tracking-wider block mb-0.5">ปัญหา</span>${highlight(item.problem)}</p>
+          ${item.solution ? `<p class="text-sm text-slate-700 dark:text-slate-300 font-medium"><span class="font-black text-gray-400 text-[10px] uppercase tracking-wider block mb-0.5">แนวทาง</span>${item.solution}</p>` : ''}
+        </div>
+        ${item.imageBase64 ? `<img src="${item.imageBase64}" class="attachment-preview mb-3" onclick="window.openImage('${item.imageBase64}')"/>` : ''}
+        ${item.officialReply ? `
+          <div class="official-reply rounded-xl p-3 mb-3">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+              <span class="material-symbols-outlined" style="font-size:13px">verified</span> ตอบโดยผู้ดูแล
+            </p>
+            <p class="text-sm">${item.officialReply.text}</p>
+            <p class="text-[10px] text-gray-400 mt-1">${item.officialReply.by} · ${timeAgo(item.officialReply.time)}</p>
+          </div>` : ''}
+        ${currentRole==='admin' ? `
+          <div class="reply-form hidden mb-3">
+            <div class="flex gap-2">
+              <input type="text" placeholder="ตอบกลับอย่างเป็นทางการ..." class="reply-input flex-1 p-2.5 px-4 rounded-2xl bg-gray-50 dark:bg-[#2d2d2d] border dark:border-gray-700 outline-none text-xs focus:ring-2 focus:ring-slate-400 transition">
+              <button class="btn-send-reply btn-primary px-4 py-2 rounded-2xl text-xs font-bold transition">ส่ง</button>
+            </div>
+          </div>` : ''}
+        <div class="flex items-center gap-1 pt-2 border-t dark:border-gray-800">
+          <button class="btn-like like-btn ${hasLiked?'liked':''} flex items-center gap-1.5 text-sm font-bold transition-all py-1.5 px-2 -ml-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
+            <span class="material-symbols-outlined text-lg" style="${hasLiked?'font-variation-settings:\'FILL\' 1':''}">thumb_up</span>
+            <span>${Object.keys(likes).length}</span>
+          </button>
+          <button class="btn-comment flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 py-1.5 px-2 rounded-xl transition">
+            <span class="material-symbols-outlined text-lg">chat_bubble</span>
+            <span>${Object.keys(comments).length}</span>
+          </button>
+          ${currentRole==='admin' ? `
+            <button class="btn-toggle-reply flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 py-1.5 px-2 rounded-xl transition" title="ตอบกลับอย่างเป็นทางการ">
+              <span class="material-symbols-outlined text-lg">verified</span>
+            </button>` : ''}
+          <button class="btn-share flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 py-1.5 px-2 rounded-xl transition ml-auto">
+            <span class="material-symbols-outlined text-lg">share</span>
+          </button>
+        </div>
+      </div>
+      <div class="comment-section hidden border-t dark:border-gray-800/60 bg-gray-50/50 dark:bg-[#13132a]">
+        <div class="comment-list p-4 space-y-2.5 max-h-52 overflow-y-auto no-scrollbar"></div>
+        <div class="px-4 pb-4 flex gap-2">
+          <input type="text" placeholder="พิมพ์ความคิดเห็น..." class="comment-input flex-1 p-2.5 px-4 rounded-2xl bg-white dark:bg-[#2d2d2d] border dark:border-gray-700 outline-none text-xs focus:ring-2 focus:ring-slate-400 transition">
+          <button class="btn-send-comment btn-primary p-2.5 px-5 rounded-2xl text-xs font-bold shadow transition">ส่ง</button>
+        </div>
+      </div>`;
+
+    // ─ Bind events ─
+    card.querySelector('.btn-like').onclick = () => {
+      hasLiked ? remove(ref(db, `feedbacks/${item.id}/likes/${currentSID}`))
+               : update(ref(db, `feedbacks/${item.id}/likes`), {[currentSID]: true});
+    };
+    const cSec = card.querySelector('.comment-section');
+    const cList = card.querySelector('.comment-list');
+    card.querySelector('.btn-comment').onclick = () => {
+      cSec.classList.toggle('hidden');
+      if (!cSec.classList.contains('hidden')) renderComments(cList, comments);
+    };
+    card.querySelector('.btn-send-comment').onclick = () => {
+      const inp = card.querySelector('.comment-input');
+      const txt = inp.value.trim();
+      if (txt) { push(ref(db, `feedbacks/${item.id}/comments`), { user: currentUser, text: txt, time: Date.now(), sid: currentSID }); inp.value = ''; showToast('ส่งความคิดเห็นแล้ว'); }
+    };
+    card.querySelector('.comment-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') card.querySelector('.btn-send-comment').click(); });
+    card.querySelector('.btn-share').onclick = () => { navigator.clipboard.writeText(`${item.title}\n\n${item.problem}`); showToast('คัดลอกแล้ว', 'content_copy'); };
+    if (canEdit) {
+      card.querySelector('.btn-edit').onclick = () => openEditForm(item);
+      card.querySelector('.btn-del').onclick  = () => { if (confirm('ต้องการลบโพสต์นี้?')) remove(ref(db, `feedbacks/${item.id}`)).then(() => showToast('ลบแล้ว', 'delete')); };
+    }
+    if (currentRole === 'admin') {
+      card.querySelector('.btn-pin').onclick = () => {
+        update(ref(db, `feedbacks/${item.id}`), { pinned: !isPinned }).then(() => showToast(isPinned ? 'ยกเลิกปักหมุด' : 'ปักหมุดแล้ว', 'push_pin'));
+      };
+      card.querySelector('.admin-status-select').onchange = (e) => {
+        e.stopPropagation();
+        update(ref(db, `feedbacks/${item.id}`), { status: e.target.value }).then(() => showToast(`เปลี่ยนสถานะเป็น ${e.target.value}`));
+      };
+      const replyForm = card.querySelector('.reply-form');
+      card.querySelector('.btn-toggle-reply').onclick = () => replyForm.classList.toggle('hidden');
+      card.querySelector('.btn-send-reply').onclick = () => {
+        const inp = card.querySelector('.reply-input');
+        if (inp.value.trim()) {
+          update(ref(db, `feedbacks/${item.id}`), { officialReply: { text: inp.value.trim(), by: currentUser, time: Date.now() } }).then(() => showToast('ตอบกลับแล้ว'));
+          inp.value = ''; replyForm.classList.add('hidden');
+        }
+      };
+    }
+    list.appendChild(card);
+  });
+
+  // Hydrate post avatars
+  document.querySelectorAll('.post-avatar').forEach(async (el) => {
+    const sid = el.dataset.sid; if (!sid) return;
+    const photo = await getUserPhoto(sid);
+    if (photo) el.innerHTML = `<img src="${photo}" class="w-full h-full object-cover">`;
+  });
+
+  // Pagination
+  if (totalPages > 1) {
+    pagination.classList.remove('hidden'); pagination.innerHTML = '';
+    for (let p = 1; p <= totalPages; p++) {
+      const btn = document.createElement('button');
+      btn.textContent = p;
+      btn.className = `w-9 h-9 rounded-xl text-sm font-bold transition ${p === currentPage ? 'btn-primary shadow' : 'bg-white dark:bg-[#1e1e2e] border dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2d2d2d]'}`;
+      btn.onclick = () => { currentPage = p; renderFeed(); document.querySelector('main').scrollTo(0,0); };
+      pagination.appendChild(btn);
+    }
+  } else pagination.classList.add('hidden');
+}
+
+function renderComments(cList, comments) {
+  cList.innerHTML = '';
+  const sorted = Object.values(comments).sort((a,b) => a.time - b.time);
+  if (!sorted.length) { cList.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-2">ยังไม่มีความคิดเห็น</p>'; return; }
+  sorted.forEach(c => {
+    const d = document.createElement('div'); d.className = 'flex items-start gap-2';
+    d.innerHTML = `
+      <div class="w-6 h-6 rounded-full avatar-bg flex items-center justify-center text-white text-[9px] font-black shrink-0 mt-0.5">${c.user.charAt(0).toUpperCase()}</div>
+      <div class="bg-white dark:bg-[#2d2d2d] px-3 py-2 rounded-2xl shadow-sm text-[11px] border dark:border-gray-800 max-w-xs">
+        <span class="font-black text-slate-600 dark:text-slate-400 mr-1">${c.user}</span>
+        <span class="text-gray-600 dark:text-gray-300">${c.text}</span>
+        <div class="text-[9px] text-gray-400 mt-0.5">${timeAgo(c.time)}</div>
+      </div>`;
+    cList.appendChild(d);
+  });
+  cList.scrollTop = cList.scrollHeight;
+}
+
+window.openImage = (src) => { document.getElementById('imgModalSrc').src = src; document.getElementById('imgModal').classList.add('open'); };
+
+// ── EDIT POST ─────────────────────────────────────────────────
+function openEditForm(item) {
+  document.getElementById('editingPostId').value = item.id;
+  document.getElementById('formTitle').innerHTML = `<span class="material-symbols-outlined text-slate-500">edit</span> แก้ไขโพสต์`;
+  document.getElementById('category').value  = item.category;
+  document.getElementById('urgency').value   = item.urgency || 'ปกติ';
+  document.getElementById('title').value     = item.title   || '';
+  document.getElementById('problem').value   = item.problem || '';
+  document.getElementById('solution').value  = item.solution|| '';
+  ['title','problem','solution'].forEach(id => document.getElementById(id).dispatchEvent(new Event('input')));
+  document.getElementById('anonSection').classList.add('hidden');
+  document.getElementById('imageUploadSection').classList.add('hidden');
+  document.getElementById('btnSubmit').innerHTML = '<span class="material-symbols-outlined text-base">save</span> บันทึกการแก้ไข';
+  document.getElementById('formOverlay').classList.remove('hidden');
+}
+window.closeFormOverlay = () => {
+  document.getElementById('editingPostId').value = '';
+  document.getElementById('formTitle').innerHTML = `<span class="material-symbols-outlined text-slate-500">edit_note</span> แจ้งเรื่องใหม่`;
+  ['title','problem','solution'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).dispatchEvent(new Event('input')); });
+  document.getElementById('anonSection').classList.remove('hidden');
+  document.getElementById('imageUploadSection').classList.remove('hidden');
+  document.getElementById('btnSubmit').innerHTML = '<span class="material-symbols-outlined text-base">send</span> ส่งข้อเสนอแนะ';
+  document.getElementById('formError').classList.add('hidden');
+  clearImage(); if (isAnon) toggleAnon();
+  document.getElementById('formOverlay').classList.add('hidden');
+};
+
+// ── SUBMIT / UPDATE ───────────────────────────────────────────
+document.getElementById('btnOpenForm').onclick = () => { document.getElementById('editingPostId').value = ''; document.getElementById('formOverlay').classList.remove('hidden'); };
+document.getElementById('btnSettings').onclick = () => document.getElementById('settingsOverlay').classList.remove('hidden');
+
+document.getElementById('btnSubmit').onclick = () => {
+  const title   = document.getElementById('title').value.trim();
+  const problem = document.getElementById('problem').value.trim();
+  const errEl   = document.getElementById('formError');
+  if (!title || !problem) { errEl.textContent = 'กรุณากรอกหัวข้อและรายละเอียดปัญหา'; errEl.classList.remove('hidden'); return; }
+  errEl.classList.add('hidden');
+  const editId = document.getElementById('editingPostId').value;
+  const btn = document.getElementById('btnSubmit'); btn.disabled = true;
+
+  if (editId) {
+    update(ref(db, `feedbacks/${editId}`), {
+      title, problem,
+      solution: document.getElementById('solution').value.trim(),
+      category: document.getElementById('category').value,
+      urgency:  document.getElementById('urgency').value,
+      editedAt: Date.now()
+    }).then(() => { showToast('แก้ไขโพสต์แล้ว', 'edit'); closeFormOverlay(); })
+      .finally(() => btn.disabled = false);
+  } else {
+    const post = {
+      user: isAnon ? 'นักศึกษา' : currentUser, sid: currentSID,
+      category: document.getElementById('category').value,
+      urgency:  document.getElementById('urgency').value,
+      title, problem, solution: document.getElementById('solution').value.trim(),
+      timestamp: Date.now(), status: 'รอดำเนินการ', isAnon
+    };
+    if (imageBase64) post.imageBase64 = imageBase64;
+    push(ref(db, 'feedbacks'), post)
+      .then(() => { showToast('ส่งข้อเสนอแนะแล้ว'); closeFormOverlay(); })
+      .finally(() => btn.disabled = false);
+  }
+};
+
+// ── ANALYTICS ────────────────────────────────────────────────
+window.openAnalytics = () => { document.getElementById('analyticsOverlay').classList.remove('hidden'); updateAnalytics(); };
+function updateAnalytics() {
+  const items = allFeedbacks;
+  document.getElementById('statTotal').textContent      = items.length;
+  document.getElementById('statPending').textContent    = items.filter(i => (i.status||'รอดำเนินการ')==='รอดำเนินการ').length;
+  document.getElementById('statInProgress').textContent = items.filter(i => i.status==='กำลังดำเนินการ').length;
+  document.getElementById('statDone').textContent       = items.filter(i => i.status==='แก้ไขแล้ว').length;
+  const catCounts = {"ห้องเรียน":0,"ห้องน้ำ":0,"โรงอาหาร":0,"อื่นๆ":0};
+  items.forEach(i => { if (catCounts[i.category]!==undefined) catCounts[i.category]++; });
+  if (catChartInst) catChartInst.destroy();
+  const catCtx = document.getElementById('catChart');
+  if (catCtx) catChartInst = new Chart(catCtx, { type:'doughnut', data:{ labels:Object.keys(catCounts), datasets:[{ data:Object.values(catCounts), backgroundColor:['#64748b','#94a3b8','#cbd5e1','#334155'], borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{ family:'Sarabun', size:11 } } } } } });
+  const statCounts = {"รอดำเนินการ":0,"กำลังดำเนินการ":0,"แก้ไขแล้ว":0};
+  items.forEach(i => { const s = i.status||'รอดำเนินการ'; if (statCounts[s]!==undefined) statCounts[s]++; });
+  if (statusChartInst) statusChartInst.destroy();
+  const stCtx = document.getElementById('statusChart');
+  if (stCtx) statusChartInst = new Chart(stCtx, { type:'bar', data:{ labels:Object.keys(statCounts), datasets:[{ data:Object.values(statCounts), backgroundColor:['#fbbf24','#38bdf8','#34d399'], borderRadius:8, borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ stepSize:1 } } } } });
+  const top = [...items].sort((a,b) => Object.keys(b.likes||{}).length - Object.keys(a.likes||{}).length).slice(0,5);
+  document.getElementById('topPosts').innerHTML = top.map((p,i) => `
+    <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#2d2d2d] rounded-xl">
+      <span class="text-sm font-black text-gray-400 w-5">${i+1}</span>
+      <div class="flex-1 min-w-0"><p class="text-sm font-bold truncate">${p.title}</p><p class="text-[10px] text-gray-400">${p.user} · ${p.category}</p></div>
+      <span class="text-sm font-black text-slate-500 flex items-center gap-1"><span class="material-symbols-outlined text-sm">thumb_up</span>${Object.keys(p.likes||{}).length}</span>
+    </div>`).join('') || '<p class="text-sm text-gray-400 text-center py-4">ยังไม่มีโพสต์</p>';
+}
+window.exportCSV = () => {
+  const headers = ['วันที่','หมวดหมู่','หัวข้อ','ปัญหา','แนวทาง','ผู้ส่ง','สถานะ','ไลค์','ความเห็น'];
+  const rows = allFeedbacks.map(i => [new Date(i.timestamp).toLocaleDateString('th-TH'),i.category,`"${(i.title||'').replace(/"/g,'""')}"`,`"${(i.problem||'').replace(/"/g,'""')}"`,`"${(i.solution||'').replace(/"/g,'""')}"`,i.user,i.status||'รอดำเนินการ',Object.keys(i.likes||{}).length,Object.keys(i.comments||{}).length]);
+  const csv = [headers,...rows].map(r=>r.join(',')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download = `feedback_${Date.now()}.csv`; a.click();
+  showToast('ส่งออกข้อมูลแล้ว', 'download');
+};
+
+// ── SETTINGS ─────────────────────────────────────────────────
+window.updateNickname = () => {
+  const n = document.getElementById('editNickname').value.trim();
+  if (n && confirm('ต้องการเปลี่ยนชื่อเล่น?'))
+    update(ref(db,`users/${currentSID}`),{nickname:n}).then(()=>{showToast('เปลี่ยนชื่อเล่นแล้ว');setTimeout(()=>location.reload(),1500);});
+};
+window.updatePassword = () => {
+  const p = document.getElementById('editPw').value.trim();
+  if (p && confirm('ยืนยันเปลี่ยนรหัสผ่าน?'))
+    update(ref(db,`users/${currentSID}`),{password:p}).then(()=>showToast('เปลี่ยนรหัสผ่านแล้ว'));
+};
+window.deleteAccount = () => {
+  if (confirm('ลบบัญชีถาวร? ข้อมูลจะหายทั้งหมด'))
+    remove(ref(db,`users/${currentSID}`)).then(()=>logout());
+};
+window.logout = () => { localStorage.removeItem('uni_sid'); location.reload(); };
+
+function updateMyStats() {
+  let posts=0, likes=0, comments=0;
+  allFeedbacks.forEach(i => {
+    if (i.sid === currentSID) { posts++; likes += Object.keys(i.likes||{}).length; }
+    Object.values(i.comments||{}).forEach(c => { if (c.sid === currentSID) comments++; });
+  });
+  document.getElementById('myPostCount').textContent  = posts;
+  document.getElementById('myLikeCount').textContent  = likes;
+  document.getElementById('myCommentCount').textContent = comments;
+}
+
+// ── MENU ──────────────────────────────────────────────────────
+function renderMenu() {
+  const cats = ["ทั้งหมด","ห้องเรียน","ห้องน้ำ","โรงอาหาร","อื่นๆ"];
+  const catHTML = (onClickPrefix='') => cats.map(cat => `
+    <div onclick="${onClickPrefix}window.setCat('${cat}')" class="sidebar-item px-5 py-2.5 cursor-pointer text-xs font-bold flex items-center gap-2.5 transition ${currentFilter===cat?'active-category':'text-gray-600 dark:text-gray-400'}">
+      <span class="material-symbols-outlined" style="font-size:16px">${catIcons[cat]||'folder'}</span> ${cat}
+    </div>`).join('');
+  document.getElementById('categoryMenu').innerHTML    = catHTML();
+  document.getElementById('drawerCatMenu').innerHTML   = catHTML('closeDrawer();');
+
+  const statuses = ["ทั้งหมด","รอดำเนินการ","กำลังดำเนินการ","แก้ไขแล้ว"];
+  const dotColor = (s) => s==='ทั้งหมด'?'#94a3b8':s==='รอดำเนินการ'?'#f59e0b':s==='กำลังดำเนินการ'?'#0ea5e9':'#10b981';
+  const statusHTML = (onClickPrefix='') => statuses.map(s => `
+    <div onclick="${onClickPrefix}window.setStatusFilter('${s}')" class="sidebar-item px-5 py-2 cursor-pointer text-[11px] font-bold flex items-center gap-2 transition ${currentStatusFilter===s?'active-category':'text-gray-500 dark:text-gray-500'}">
+      <span class="w-2 h-2 rounded-full inline-block" style="background:${dotColor(s)}"></span> ${s}
+    </div>`).join('');
+  document.getElementById('statusMenu').innerHTML      = statusHTML();
+  document.getElementById('drawerStatusMenu').innerHTML = statusHTML('closeDrawer();');
+}
+window.setCat         = (c) => { currentFilter       = c; currentPage = 1; renderMenu(); renderFeed(); };
+window.setStatusFilter= (s) => { currentStatusFilter = s; currentPage = 1; renderMenu(); renderFeed(); };
+
+// ── AUTO LOGIN ────────────────────────────────────────────────
+if (currentSID) {
+  get(ref(db, `users/${currentSID}`)).then(s => {
+    if (s.exists() && s.val().password) { currentUser = s.val().nickname; currentRole = s.val().role||"user"; initMain(); }
+    else { localStorage.removeItem('uni_sid'); showPage('loginPage'); }
+  });
+} else showPage('loginPage');
+</script>
+</body>
+</html>
